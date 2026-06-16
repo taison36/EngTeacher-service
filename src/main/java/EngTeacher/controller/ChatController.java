@@ -17,13 +17,9 @@ import org.springframework.web.bind.annotation.*;
 public class ChatController {
 
     private final ChatService chatService;
-    private final UserService userService;
-    private final SessionService sessionService;
 
     @PostMapping("/message")
     public ChatMessageResponseDto processMessage(@RequestBody final ChatMessageRequestDto request) {
-        User user = userService.getUser(AuthUtils.currentUserId());
-        Session session = sessionService.getSession(user, request.getSessionId());
-        return chatService.processMessage(user, session, request.getMessage());
+        return chatService.processMessage(AuthUtils.currentUserId(), request.getSessionId(), request.getMessage());
     }
 }

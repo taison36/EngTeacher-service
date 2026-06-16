@@ -1,6 +1,6 @@
 package EngTeacher.service;
 
-import EngTeacher.dto.agent.ExerciseAttempt;
+import EngTeacher.dto.agent.tools.ExerciseAttempt;
 import EngTeacher.model.Exercise;
 import EngTeacher.model.User;
 import EngTeacher.model.UserSettings;

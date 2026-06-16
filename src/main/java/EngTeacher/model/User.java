@@ -15,6 +15,7 @@ public class User {
     @Id
     private String id;
     private String name;
+    //TODO user dto
     private String passwordHash;
     @Builder.Default
     private List<Phrase> phrases = new ArrayList<>();

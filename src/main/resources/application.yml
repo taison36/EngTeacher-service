@@ -3,12 +3,12 @@ spring:
     name: "EngTeacher"
   ai:
     openai:
-      api-key: ${GROQ_API_KEY}
+      api-key: ${GROQ_API_KEY_LERA}
       base-url: https://api.groq.com/openai
       chat:
         options:
           model: llama-3.3-70b-versatile
-          temperature: 0.7
+          temperature: 0.8
     chat:
       observations:
         log-prompt: true
@@ -23,13 +23,6 @@ jwt:
   secret: ${JWT_SECRET}
   expiration-ms: 86400000
 
-logging:
-  level:
-    io.opentelemetry: DEBUG
-    io.micrometer.tracing: DEBUG
-    io.opentelemetry.exporter: TRACE
-    io.opentelemetry.sdk.trace: DEBUG
-
 management:
   tracing:
     sampling:
@@ -42,6 +35,10 @@ management:
       enable:
         "http.server.requests": false # Suppress duplicate Micrometer HTTP server spans
         "http.client.requests": false # Suppress duplicate Micrometer HTTP client spans
+  otlp:
+    metrics:
+      export:
+        enabled: false
   opentelemetry:
     tracing:
       export:

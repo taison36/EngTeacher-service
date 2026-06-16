@@ -1,6 +1,6 @@
 package EngTeacher.service;
 
-import EngTeacher.dto.agent.ExerciseGenerationDto;
+import EngTeacher.dto.agent.tools.ExerciseGenerationDto;
 import EngTeacher.exceptions.AgentResponseParsingException;
 import EngTeacher.exceptions.ImproperApiUsageException;
 import EngTeacher.model.Exercise;

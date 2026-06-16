@@ -1,4 +1,4 @@
-package EngTeacher.dto.agent;
+package EngTeacher.dto.agent.tools;
 
 public record ExerciseAttempt() {
 

@@ -1,6 +1,5 @@
-package EngTeacher.dto.agent;
+package EngTeacher.dto.agent.tools;
 
-import lombok.Builder;
 import lombok.Data;
 
 @Data

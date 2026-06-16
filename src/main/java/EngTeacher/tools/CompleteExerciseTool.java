@@ -1,6 +1,6 @@
 package EngTeacher.tools;
 
-import EngTeacher.dto.agent.ExerciseAttempt.*;
+import EngTeacher.dto.agent.tools.ExerciseAttempt.*;
 import EngTeacher.service.ExerciseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.tool.ToolCallback;
@@ -12,6 +12,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +25,10 @@ public class CompleteExerciseTool implements ToolCallback {
     public ToolDefinition getToolDefinition() {
         return ToolDefinition.builder()
                 .name("markExercisesCorrect")
-                .description("Mark exercises as CORRECT when user successfully used the target phrases")
+                .description("""
+                        Mark exercises as CORRECT when user successfully used the target phrases. Expects a list "attempts"
+                        Returns in the following format: "Marked exercise with ID: %s as done"
+                        """)
                 .inputSchema(buildInputSchema())
                 .build();
     }
@@ -43,7 +47,7 @@ public class CompleteExerciseTool implements ToolCallback {
 
             exerciseService.markCorrect(attempts);
 
-            return "Updated " + attempts.size() + " exercises as correct";
+            return formatAttempts(attempts);
 
         } catch (JacksonException e) {
             throw new RuntimeException("Failed to parse tool input: " + toolInput, e);
@@ -73,5 +77,14 @@ public class CompleteExerciseTool implements ToolCallback {
                   "required": ["attempts"]
                 }
                 """;
+    }
+
+    private String formatAttempts(final List<Correct> attempts) {
+        return attempts.stream()
+                .map(a -> String.format(
+                        "Marked exercise with ID: %s as done",
+                        a.exerciseId()
+                ))
+                .collect(Collectors.joining("\n"));
     }
 }
