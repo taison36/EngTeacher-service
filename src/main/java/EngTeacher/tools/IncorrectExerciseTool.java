@@ -24,12 +24,28 @@ public class IncorrectExerciseTool implements ToolCallback {
                 .name("markExerciseIncorrect")
                 .description("""
                         Mark ONE exercise as FAILED when the user's answer does NOT use the target phrase's
-                        core lexical pattern. Use this only for clear misses:
-                            - a synonym ("stay focused" instead of "stick to a plan"),
-                            - a paraphrase or wholly different phrase,
-                            - the wrong target phrase from the active list,
-                            - grammatically broken English that no longer reflects the target construct,
-                            - the user explicitly asks for the answer / gives up.
+                        core lexical pattern. This is the counterpart to `markExerciseCorrect` — apply the same
+                        strictness, in reverse.
+
+                        MARK INCORRECT when:
+                            - the user uses a synonym or paraphrase that replaces the core verb/noun of the
+                              target phrase (target "break the ice" → "start the conversation" is INCORRECT;
+                              target "look forward to" → "anticipate" is INCORRECT),
+                            - the user fills the blank with a DIFFERENT target phrase from the active session,
+                            - the answer is grammatically broken English that no longer reflects the target
+                              construct,
+                            - the user explicitly asks for the answer or gives up.
+
+                        DO NOT mark incorrect (these are CORRECT — use `markExerciseCorrect`):
+                            - different tense, person, or number ("break" → "broke", "I" → "they"),
+                            - different inflection (gerund vs. infinitive, singular vs. plural),
+                            - obvious typos / misspellings of the target words ("acheive" instead of "achieve"),
+                            - swapping a preposition or article for a near-equivalent one
+                              (a/the, "on the bus" / "on a bus"),
+                            - filling placeholders ("something", "someone") with concrete content
+                              (target "look forward to something" → "look forward to seeing you").
+
+                        When in doubt between "same words, different form" and "different words", lean INCORRECT.
 
                         To inspect what exercises are currently active in the session, use 'getCurrentExercises' first.
                         To mark multiple exercises, call this tool once per exercise.

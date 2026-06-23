@@ -27,16 +27,26 @@ public class CompleteExerciseTool implements ToolCallback {
                         Mark ONE exercise as CORRECT when the user has successfully produced the target phrase
                         for the fill-in-the-blank question.
 
-                        Be GENEROUS. The goal is for the user to practice the construct, not to reproduce an
-                        exact string. Treat the answer as correct when it uses the same core lexical pattern
-                        as the target phrase, even if:
-                            - the tense, person, or number differs,
-                            - inflections differ (gerund vs. infinitive, etc.),
-                            - placeholder words ("something", "someone") are filled with concrete content
-                              (target "end up doing something" → "end up copying each other's answers" is CORRECT;
-                               target "stick to a plan" → "stuck to our plan" is CORRECT),
-                            - small function-word swaps (a/the, prepositions that don't change meaning) appear.
-                        When in doubt between "close enough" and "wrong", lean CORRECT.
+                        The user MUST use the SAME core words as the target phrase. Surface-level variations
+                        are accepted; lexical swaps are NOT.
+
+                        ACCEPT (still CORRECT):
+                            - different tense, person, or number ("break" → "broke", "I" → "they"),
+                            - different inflection (gerund vs. infinitive, singular vs. plural),
+                            - obvious typos / misspellings of the target words ("acheive" instead of "achieve"),
+                            - swapping a preposition or article for a near-equivalent one
+                              (a/the, "on the bus" / "on a bus"),
+                            - filling placeholders ("something", "someone") with concrete content
+                              (target "look forward to something" → "look forward to seeing you" is CORRECT).
+
+                        REJECT (mark INCORRECT via markExerciseIncorrect instead):
+                            - synonyms or paraphrases that replace the core verb/noun of the phrase
+                              (target "break the ice" → "start the conversation" is INCORRECT;
+                               target "look forward to" → "anticipate" is INCORRECT),
+                            - any rephrasing that changes the target phrase's main lexical items,
+                            - using a different target phrase from the session.
+
+                        When in doubt between "same words, different form" and "different words", lean INCORRECT.
 
                         To inspect what exercises are currently active in the session, use 'getCurrentExercises' first.
                         To mark multiple exercises, call this tool once per exercise.

@@ -34,6 +34,7 @@ public class RegenerateExerciseQuestionTool implements ToolCallback {
 
 
                         Important:
+                            - BEFORE calling this tool you MUST mark the exercise as incorrect
                             - After calling this tool, you MUST present the newly generated question to the user in your reply so they can attempt it.
                             - Do NOT reveal the target phrase in the new question — it must remain a blank to be filled.
                             - The new question must clearly indicate the blank (e.g. "I __ to the store yesterday.").

@@ -90,7 +90,11 @@ public final class TestCases {
                 "I don't know how to fill the professor sentence — what's the answer?",
                 List.of(
                         ExpectedCall.of("getCurrentExercises"),
-                        ExpectedCall.of("markExerciseIncorrect", Map.of("exerciseId", "exercise3"))
+                        ExpectedCall.of("markExerciseIncorrect", Map.of("exerciseId", "exercise3")),
+                        ExpectedCall.of("regenerateExerciseQuestion", Map.of(
+                                "exerciseId", "exercise3",
+                                "newQuestion", ExpectedCall.regex(".+")
+                        ))
                 )
         );
         return new AgentTestCase("userAsksForAnswerIsIncorrect", defaultFixture(), List.of(turn));
@@ -119,6 +123,7 @@ public final class TestCases {
                 "To achieve your goals, it's essential to commit to the plan and avoid distractions",
                 List.of(
                         ExpectedCall.of("getCurrentExercises"),
+                        ExpectedCall.of("markExerciseIncorrect", Map.of("exerciseId", "exercise2")),
                         ExpectedCall.of("regenerateExerciseQuestion", Map.of(
                                 "exerciseId", "exercise2",
                                 "newQuestion", ExpectedCall.regex(".+")
@@ -133,6 +138,7 @@ public final class TestCases {
                 "Can you give me a different fill-in for the professor sentence?",
                 List.of(
                         ExpectedCall.of("getCurrentExercises"),
+                        ExpectedCall.of("markExerciseIncorrect", Map.of("exerciseId", "exercise3")),
                         ExpectedCall.of("regenerateExerciseQuestion", Map.of(
                                 "exerciseId", "exercise3",
                                 "newQuestion", ExpectedCall.regex(".+")

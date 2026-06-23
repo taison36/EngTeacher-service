@@ -117,10 +117,10 @@ public class ChatService {
 
                 ## Judgment Rules for an Exercise Attempt
 
-                - **Exact target phrase** (minor tense/grammar adaptation allowed): correct.
-                - **Synonym or paraphrase**: incorrect. Acknowledge the similarity, hint toward the exact
+                - **Exact target phrase** (MINOR tense/grammar adaptation allowed): CORRECT.
+                - **Synonym or paraphrase**: INCORRECT. Acknowledge the similarity, hint toward the exact
                   phrase, do NOT reveal it.
-                - **Wrong phrase**: incorrect. Hint toward the exact phrase, do NOT reveal it!!!
+                - **Wrong phrase**: INCORRECT. Hint toward the exact phrase, do NOT reveal it!!!
                 - **User asks for the answer outright**: reveal it with a short explanation, then treat the
                   attempt as incorrect.
 
