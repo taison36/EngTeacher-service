@@ -1,0 +1,36 @@
+@startuml chat-request-sequence
+title Request-Ablauf: POST /api/chat/message
+
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+
+!$app = "#BBDEFB"
+!$db  = "#C8E6C9"
+!$llm = "#FFCDD2"
+
+actor Nutzer
+participant "Client"             as client  $app
+participant "EngTeacher\nService" as service $app
+participant "LLM\n(Groq)"        as llm     $llm
+database    "MongoDB"            as mongo   $db
+
+Nutzer -> client : Nachricht
+client -> service : POST /api/chat/message\n(JWT)
+
+service -> mongo : Chat-Historie laden
+mongo --> service : Messages
+
+service -> llm : Prompt + Tools
+llm --> service : Antwort (ggf. Tool Calls)
+
+loop bei Tool Calls
+  service -> mongo : Exercise/User aktualisieren
+  service -> llm : Tool-Resultate
+  llm --> service : nächste Antwort
+end
+
+service -> mongo : Chat-Historie speichern
+service --> client : Antwort + Exercises
+client --> Nutzer : Anzeige
+
+@enduml

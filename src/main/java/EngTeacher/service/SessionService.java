@@ -3,6 +3,7 @@ package EngTeacher.service;
 import EngTeacher.dto.ChatMessageDto;
 import EngTeacher.exceptions.NotFoundException;
 import EngTeacher.model.Exercise;
+import EngTeacher.model.ExerciseState;
 import EngTeacher.model.Session;
 import EngTeacher.model.User;
 import EngTeacher.model.UserSettings;
@@ -13,13 +14,11 @@ import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class SessionService {
 
-    private final ExerciseGenerationService exerciseGenerationService;
     private final ChatMemory chatMemory;
 
     public Session getSession(final User user, final String sessionId) {
@@ -29,20 +28,9 @@ public class SessionService {
                 .orElseThrow(() -> new NotFoundException(String.format("Session %s was not found in DB", sessionId)));
     }
 
-    public Session createSession(final User user) {
-        final Session createdSession = Session.builder()
-                .id(UUID.randomUUID().toString())
-                .build();
-        final int neededExerciseQuantity = neededExerciseQuantity(createdSession, user.getSettings());
-        final var exercises = exerciseGenerationService.generate(user, neededExerciseQuantity);
-        createdSession.getExercises().addAll(exercises);
-        user.getSessions().add(createdSession);
-        return createdSession;
-    }
-
     public int deleteDoneExercises(Session session) {
         final int initialSize = session.getExercises().size();
-        List<Exercise> uncomplete = session.getExercises().stream().filter(e -> !e.isDone()).toList();
+        List<Exercise> uncomplete = session.getExercises().stream().filter(e -> e.getState() != ExerciseState.COMPLETED).toList();
         session.setExercises(uncomplete);
         return initialSize - uncomplete.size();
     }

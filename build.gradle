@@ -2,6 +2,15 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.adarshr.test-logger' version '4.0.0'
+}
+
+testlogger {
+    theme 'mocha'
+    showStandardStreams true
+    showPassedStandardStreams true
+    showSkippedStandardStreams false
+    slowThreshold 5000
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -21,7 +30,7 @@ repositories {
 }
 
 ext {
-    set('springAiVersion', "2.0.0")
+    set('springAiVersion', "2.0.0-M4")
 }
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
@@ -54,4 +63,17 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+
+    def envFile = file("${rootDir}/../.env")
+    if (envFile.exists()) {
+        envFile.readLines().each { line ->
+            def trimmed = line.trim()
+            if (trimmed && !trimmed.startsWith('#') && trimmed.contains('=')) {
+                def idx = trimmed.indexOf('=')
+                def key = trimmed.substring(0, idx).trim()
+                def value = trimmed.substring(idx + 1).trim().replaceAll(/^["']|["']$/, '')
+                environment key, value
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@ package EngTeacher.service;
 
 import EngTeacher.dto.agent.tools.ExerciseAttempt;
 import EngTeacher.model.Exercise;
+import EngTeacher.model.ExerciseState;
 import EngTeacher.model.User;
 import EngTeacher.model.UserSettings;
 import EngTeacher.security.AuthUtils;
@@ -22,7 +23,7 @@ public class ExerciseService {
         User user = userService.getUser(AuthUtils.currentUserId());
         corrects.forEach(correct -> {
             findExercise(user, correct.exerciseId()).ifPresent(exercise -> {
-                exercise.setDone(true);
+                exercise.setState(ExerciseState.COMPLETED);
                 updatePhrase(user, exercise.getPhrase().getId(), 10, 1);
             });
         });
@@ -34,8 +35,20 @@ public class ExerciseService {
         User user = userService.getUser(AuthUtils.currentUserId());
         incorrects.forEach(incorrect -> {
             findExercise(user, incorrect.exerciseId()).ifPresent(exercise -> {
-                exercise.setQuestion(incorrect.newQuestion());
+                exercise.setState(ExerciseState.FAILED);
                 updatePhrase(user, exercise.getPhrase().getId(), -10, 0);
+            });
+        });
+        userService.save(user);
+    }
+
+    public void regenerateQuestions(List<ExerciseAttempt.Regenerate> regenerations) {
+        if (regenerations.isEmpty())  return;
+        User user = userService.getUser(AuthUtils.currentUserId());
+        regenerations.forEach(regen -> {
+            findExercise(user, regen.exerciseId()).ifPresent(exercise -> {
+                exercise.setQuestion(regen.newQuestion());
+                exercise.setState(ExerciseState.NOT_ATTEMPTED);
             });
         });
         userService.save(user);

@@ -8,6 +8,11 @@ public record ExerciseAttempt() {
     }
 
     public record Incorrect(
+            String exerciseId
+    ) {
+    }
+
+    public record Regenerate(
             String exerciseId,
             String newQuestion
     ) {

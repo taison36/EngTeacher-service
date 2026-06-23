@@ -9,5 +9,6 @@ public class Exercise {
     private final String id;
     private String question;
     private Phrase phrase;
-    private boolean done;
+    @Builder.Default
+    private ExerciseState state = ExerciseState.NOT_ATTEMPTED;
 }

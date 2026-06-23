@@ -6,6 +6,7 @@ import EngTeacher.model.Session;
 import EngTeacher.model.User;
 import EngTeacher.security.AuthUtils;
 import EngTeacher.service.ExerciseGenerationService;
+import EngTeacher.service.SessionCreationService;
 import EngTeacher.service.SessionService;
 import EngTeacher.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +21,13 @@ public class SessionController {
 
     private final UserService userService;
     private final SessionService sessionService;
+    private final SessionCreationService sessionCreationService;
     private final ExerciseGenerationService exerciseGenerationService;
 
     @PostMapping
     public Session createSession() {
         User user = userService.getUser(AuthUtils.currentUserId());
-        Session createdSession = sessionService.createSession(user);
+        Session createdSession = sessionCreationService.createSession(user);
         userService.save(user);
         return createdSession;
     }

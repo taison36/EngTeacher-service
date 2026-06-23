@@ -1,12 +1,7 @@
 package EngTeacher.service;
 
-import EngTeacher.constant.AppConstant;
 import EngTeacher.dto.ChatMessageResponseDto;
-import EngTeacher.dto.agent.EvaluationResult;
-import EngTeacher.model.AgentRule;
 import EngTeacher.model.Exercise;
-import EngTeacher.model.Session;
-import EngTeacher.model.User;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +13,8 @@ import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.model.tool.ToolExecutionResult;
@@ -28,8 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.Map;
 
 
 @Slf4j
@@ -39,13 +33,10 @@ public class ChatService {
 
     private final ChatModel chatModel;
     private final List<ToolCallback> tools;
-    private final ToolCallingManager toolCallingManager;
     private final ChatMemory chatMemory;
     private final UserService userService;
     private final SessionService sessionService;
-    private final AgentRuleService agentRuleService;
     private final Tracer tracer;
-    private final ExerciseService exerciseService;
 
     public ChatMessageResponseDto processMessage(final String userId, final String sessionId, String userMessage) {
         Span span = tracer.nextSpan().name("user-interaction");
@@ -69,9 +60,10 @@ public class ChatService {
     }
 
     private ChatMessageResponseDto execute(final String userId, final String sessionId, String userMessage) {
-        ToolCallingChatOptions chatOptions = ToolCallingChatOptions.builder()
+        ChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .toolCallbacks(tools)
-                .maxTokens(300)
+                .internalToolExecutionEnabled(true)
+                .toolContext(Map.of("sessionId", sessionId))
                 .build();
 
         List<Message> agentLoopMemory = new ArrayList<>(chatMemory.get(sessionId));
@@ -81,141 +73,69 @@ public class ChatService {
             agentLoopMemory.add(systemMessage);
         }
 
-        User user = userService.getUser(userId);
-        Session session = sessionService.getSession(user, sessionId);
-        var exercisesAsMessage = new SystemMessage("[CURRENT EXERCISES]\n" + formatExercises(session.getExercises()));
-        agentLoopMemory.add(exercisesAsMessage);
-
         UserMessage userMsg = new UserMessage(userMessage);
         chatMemory.add(sessionId, userMsg);
         agentLoopMemory.add(userMsg);
 
-
         Prompt prompt = new Prompt(agentLoopMemory, chatOptions);
         ChatResponse chatResponse = chatModel.call(prompt);
 
-        while (chatResponse.hasToolCalls()) {
-            ToolExecutionResult toolResult = toolCallingManager.executeToolCalls(prompt, chatResponse);
-            if (toolResult.conversationHistory().getLast() instanceof ToolResponseMessage toolResponseMessage) {
-                agentLoopMemory.add(toolResponseMessage);
-            }
-            // Reload exercises only after a tool call, since that is when state changes
-            //user = userService.getUser(userId);
-            //session = sessionService.getSession(user, sessionId);
-            //var updatedExercises = new SystemMessage("[CURRENT EXERCISES]\n" + formatExercises(session.getExercises()));
-            //agentLoopMemory.add(updatedExercises);
-
-            prompt = new Prompt(agentLoopMemory, chatOptions);
-
-            chatResponse = chatModel.call(prompt);
-            agentLoopMemory.add(chatResponse.getResult().getOutput());
-        }
-
-        String unvalidatedResponse = chatResponse.getResult().getOutput().getText();
-
-        //TODO Rule: did the agent use a question from existing exercises?
-//        List<AgentRule> rules = agentRuleService.getEnabledRules();
-//        if (!rules.isEmpty()) {
-//            EvaluationResult eval = evaluate(unvalidatedResponse, userMessage, session, rules);
-//            int step = 1;
-//            while (!eval.passed() && step < AppConstant.MAX_EVALUATION_STEPS) {
-//                log.debug("Evaluation failed — rule: '{}', reason: '{}'", eval.violatedRule(), eval.reason());
-//                agentLoopMemory.add(chatResponse.getResult().getOutput());
-//                agentLoopMemory.add(new SystemMessage(
-//                        "[SYSTEM CORRECTION] Your response violated the rule '%s': %s. Please revise."
-//                                .formatted(eval.violatedRule(), eval.reason())
-//                ));
-//                unvalidatedResponse = chatModel.call(new Prompt(agentLoopMemory, chatOptions))
-//                        .getResult().getOutput().getText();
-//                eval = evaluate(unvalidatedResponse, userMessage, session, rules);
-//                step++;
-//            }
-//        }
-
-        String finalResponse = unvalidatedResponse;
-
         chatMemory.add(sessionId, chatResponse.getResult().getOutput());
 
-        user = userService.getUser(user.getId());
-        session = sessionService.getSession(user, session.getId());
-        List<Exercise> updatedExercises = session.getExercises();
+        List<Exercise> updatedExercises = sessionService.getSession(userService.getUser(userId), sessionId).getExercises();
 
         return ChatMessageResponseDto.builder()
-                .agentResponse(finalResponse)
+                .agentResponse(chatResponse.getResult().getOutput().getText())
                 .exercises(updatedExercises)
                 .build();
     }
 
-    private EvaluationResult evaluate(String agentResponse, String userMessage, Session session, List<AgentRule> rules) {
-        BeanOutputConverter<EvaluationResult> converter = new BeanOutputConverter<>(EvaluationResult.class);
-
-        String rulesFormatted = IntStream.range(0, rules.size())
-                .mapToObj(i -> "%d. %s".formatted(i + 1, rules.get(i).getDescription()))
-                .collect(Collectors.joining("\n"));
-
-        String exercisesFormatted = formatExercises(session.getExercises());
-
-        String evalPrompt = """
-                You are evaluating whether an English language learning assistant followed all required rules.
-                
-                Active exercises (target phrases the student must discover):
-                %s
-                
-                Student's message: "%s"
-                Assistant's response: "%s"
-                
-                Rules:
-                %s
-                
-                %s
-                """.formatted(exercisesFormatted, userMessage, agentResponse, rulesFormatted, converter.getFormat());
-
-        try {
-            String evalResponse = chatModel.call(new Prompt(evalPrompt))
-                    .getResult().getOutput().getText();
-            return converter.convert(evalResponse);
-        } catch (Exception e) {
-            log.warn("Evaluation parsing failed — skipping. Error: {}", e.getMessage());
-            return EvaluationResult.pass();
-        }
-    }
-
     private String buildInitSystemPrompt() {
         return """
-                You are a language learning assistant helping the user practice English phrases through exercises. Answer users questions and conclude a dialog.
-                
-                ## Exercise evaluation Framework
-                ### Analysis Process:
-                1. Search for current exercises in chat history. Exercises are provided as system message.
-                2. Identify, if the uses attempted one of the current exercises.
-                3. If the user has attempted an exercise call a corresponding tool.
-                4. If the user didn't attempt any exercise, just conduct a conversation.
-                
-                ### Key Metrics to Evaluate:
-                - Mark correct ONLY if the user used the target phrase for fill-in-the-blank question. Minor tense/grammar adaptation is fine; synonyms are not.
-                - If the user uses a synonym or paraphrase: do not reveal the answer. Mark incorrect, acknowledge the similarity, give a hint toward the exact phrase, and present the new generated question.
-                - If the user has used wrong phrase: do not reveal the answer. Mark incorrect, give a hint toward the exact phrase and present the new generated question.
-                - If the user asks for the answer: reveal it with a brief explanation, mark incorrect and present the new generated question.
-                
-                ## VERY IMPORTANT Rules for Tool Usage
-                -SINGLE EXECUTION RULE: it is forbidden to call a tool more then once for one user message!
-                
-                ## Tone
-                Be friendly and helpful teacher
-                """;
-    }
+                You are a friendly, expert English teacher. You help the user practice target English phrases
+                through fill-in-the-blank exercises while holding a natural conversation.
 
-    // - SINGLE EXECUTION RULE: After you find the "[TOOL]: […]” response, your ONLY next step is to reply to the user. It is forbidden to re-run a tool for the same request once you have its output.
-    // - Trust Tool Outputs: A tool’s response is FINAL. Accept the first response and DO NOT re-run the tool.”
-    private String formatExercises(List<Exercise> exercises) {
-        return exercises.stream()
-                .map(ex -> String.format(
-                        "ID: %s | Phrase: \"%s\" | Fill-in-the-blank question: \"%s\" | Done: %b",
-                        ex.getId(),
-                        ex.getPhrase().getContent(),
-                        ex.getQuestion(),
-                        ex.isDone()
-                ))
-                .collect(Collectors.joining("\n"));
+                ## Your Process
+
+                On every user message, follow this loop until you are ready to reply:
+
+                1. **Retrieve** the current exercises by calling `getCurrentExercises`. Do this FIRST on every
+                   turn — never reason about exercises from memory, never invent exercise IDs.
+                2. **Analyze** the user's message against the retrieved exercises. Is it an attempt at one of
+                   the active exercises or just conversation? Consider, that user can immediately start answering an exercise question
+                3. **Decide** whether you need a tool and call it with real arguments:
+                   - User correctly produced a target phrase → `markExerciseCorrect`.
+                   - User got it wrong, used a synonym/paraphrase, used the wrong phrase, or asked for the
+                     answer → `markExerciseIncorrect`.
+                   - `regenerateExerciseQuestion` to give the user a fresh question for the same phrase
+                     (see that tool's description for the exact conditions under which to call it).
+                   - Each of these tools acts on ONE exercise. To act on several at once, call the tool once
+                     per exercise.
+                   - Otherwise, no tool is needed.
+                4. **Observe** the tool result, then loop back to step 2 if more work is needed.
+                5. **Reply** to the user in natural language once all needed tools have run.
+
+                ## Judgment Rules for an Exercise Attempt
+
+                - **Exact target phrase** (minor tense/grammar adaptation allowed): correct.
+                - **Synonym or paraphrase**: incorrect. Acknowledge the similarity, hint toward the exact
+                  phrase, do NOT reveal it.
+                - **Wrong phrase**: incorrect. Hint toward the exact phrase, do NOT reveal it!!!
+                - **User asks for the answer outright**: reveal it with a short explanation, then treat the
+                  attempt as incorrect.
+
+                ## Hard Rules
+
+                - NEVER reveal target phrase, IF you DON'T generate a new exercise question.
+                - Act, don't narrate!!! If a tool can change state, CALL the tool - DO NOT JUST SAY in chat that
+                  you marked something correct/incorrect.
+                - Never fabricate exercise IDs. Always retrieve them from the appropriate tool first.
+                - One tool call per logical step; do not call the same tool twice with the same arguments.
+                - Your final reply to the user is plain conversational text, not JSON, not tool syntax.
+
+                ## Tone
+
+                Warm, encouraging, concise — a patient teacher having a one-on-one chat.
+                """;
     }
 }

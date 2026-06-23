@@ -1,0 +1,39 @@
+@startuml service-components
+title EngTeacher Service – Komponenten
+
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam componentStyle rectangle
+
+!$app = "#BBDEFB"
+!$db  = "#C8E6C9"
+!$llm = "#FFCDD2"
+!$obs = "#FFE0B2"
+
+package "EngTeacher Service" {
+  [REST Controller]                  as ctrl       $app
+  [Security\n(JWT)]                  as sec        $app
+  [Chat Service]                     as chat       $app
+  [Session / Exercise\nServices]     as sessionEx  $app
+  [LLM Tools]                        as tools      $app
+  [Spring AI\n(ChatModel, ChatMemory)] as ai       $app
+  [Observability\n(Tracing)]         as obsComp    $obs
+}
+
+database  "MongoDB"      as mongo    $db
+rectangle "Groq LLM API" as llm      $llm
+rectangle "Langfuse"     as langfuse $obs
+
+ctrl --> sec
+ctrl --> chat
+ctrl --> sessionEx
+chat --> ai
+chat --> tools
+tools --> sessionEx
+sessionEx --> mongo
+ai --> mongo : Chat Memory
+ai --> llm
+obsComp --> langfuse
+chat ..> obsComp
+
+@enduml

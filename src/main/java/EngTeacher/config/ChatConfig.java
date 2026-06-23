@@ -12,11 +12,6 @@ import org.springframework.context.annotation.Configuration;
 public class ChatConfig {
 
     @Bean
-    public ChatClient openAiChatClient(OpenAiChatModel chatModel) {
-        return ChatClient.create(chatModel);
-    }
-
-    @Bean
     public ChatMemory chatMemory(MongoChatMemoryRepository chatMemoryRepository) {
         return MessageWindowChatMemory.builder()
             .chatMemoryRepository(chatMemoryRepository)

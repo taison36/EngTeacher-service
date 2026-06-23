@@ -3,11 +3,15 @@ spring:
     name: "EngTeacher"
   ai:
     openai:
-      api-key: ${GROQ_API_KEY_LERA}
-      base-url: https://api.groq.com/openai
+      api-key: ${OPENROUTER_API_KEY}
+      base-url: https://openrouter.ai/api/
       chat:
         options:
-          model: llama-3.3-70b-versatile
+          #model: deepseek/deepseek-v4-flash
+          #model: deepseek/deepseek-v4-pro
+          model: anthropic/claude-haiku-4.5
+          #model: openai/gpt-5.3-chat
+          #model: xiaomi/mimo-v2.5
           temperature: 0.8
     chat:
       observations:

@@ -1,0 +1,28 @@
+@startuml architecture-overview
+title EngTeacher – Systemarchitektur
+
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam componentStyle rectangle
+
+!$app    = "#BBDEFB"
+!$db     = "#C8E6C9"
+!$llm    = "#FFCDD2"
+!$obs    = "#FFE0B2"
+
+actor "Nutzer" as user
+
+rectangle "Client\n(Vue.js)"           as client   $app
+rectangle "EngTeacher Service\n(Spring AI)" as service $app
+database  "MongoDB"                    as mongo    $db
+rectangle "Groq LLM API"               as llm      $llm
+rectangle "Langfuse"                   as langfuse $obs
+
+user --> client : Request
+client --> user : Response
+client --> service : REST
+service --> mongo
+service ..> llm
+service ..> langfuse : Traces
+
+@enduml
