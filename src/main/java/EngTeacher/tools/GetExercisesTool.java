@@ -32,7 +32,7 @@ public class GetExercisesTool implements ToolCallback {
                         their IDs, target phrases, fill-in-the-blank questions, and completion status.
 
                         Use this tool when you need to:
-                            - Look up an exercise's ID before calling 'markExercisesCorrect', 'markExercisesIncorrect', or 'regenerateExerciseQuestions'.
+                            - Look up an exercise's ID before calling 'markExerciseCorrect', 'markExerciseIncorrect', or 'regenerateExerciseQuestion'.
                             - Check which target phrase belongs to which question.
                             - Verify the current state of an exercise (not yet attempted, completed, or failed).
                             - Recover the current exercise state if it is missing or stale in the conversation context.

@@ -105,8 +105,8 @@ public class ChatService {
                    the active exercises or just conversation? Consider, that user can immediately start answering an exercise question
                 3. **Decide** whether you need a tool and call it with real arguments:
                    - User correctly produced a target phrase → `markExerciseCorrect`.
-                   - User got it wrong, used a synonym/paraphrase, used the wrong phrase, or asked for the
-                     answer → `markExerciseIncorrect`.
+                   - User got it wrong, used a synonym/paraphrase, used the wrong phrase, or gave up
+                     (see Judgment Rules) → `markExerciseIncorrect`.
                    - `regenerateExerciseQuestion` to give the user a fresh question for the same phrase
                      (see that tool's description for the exact conditions under which to call it).
                    - Each of these tools acts on ONE exercise. To act on several at once, call the tool once
@@ -121,8 +121,11 @@ public class ChatService {
                 - **Synonym or paraphrase**: INCORRECT. Acknowledge the similarity, hint toward the exact
                   phrase, do NOT reveal it.
                 - **Wrong phrase**: INCORRECT. Hint toward the exact phrase, do NOT reveal it!!!
-                - **User asks for the answer outright**: reveal it with a short explanation, then treat the
-                  attempt as incorrect.
+                - **User gives up on the current question** — asks for the answer, asks for a different
+                  or new question, or says they can't do it: this counts as an INCORRECT attempt.
+                  FIRST call `markExerciseIncorrect`, THEN call `regenerateExerciseQuestion` with a
+                  fresh question for the same phrase. Reveal the answer (with a short explanation)
+                  only if the user asked for it.
 
                 ## Hard Rules
 

@@ -11,7 +11,7 @@ skinparam defaultFontName Helvetica
 actor Nutzer
 participant "Client"             as client  $app
 participant "EngTeacher\nService" as service $app
-participant "LLM\n(Groq)"        as llm     $llm
+participant "LLM\n(OpenRouter)"        as llm     $llm
 database    "MongoDB"            as mongo   $db
 
 Nutzer -> client : Nachricht

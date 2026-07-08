@@ -7,8 +7,12 @@ spring:
       base-url: https://openrouter.ai/api/
       chat:
         options:
+          #model: openai/gpt-5.5
+          #model: z-ai/glm-5.2
+          #model: deepseek/deepseek-v4-pro
+          #model: deepseek/deepseek-v4-flash
           #model: google/gemini-3.5-flash
-          model: deepseek/deepseek-v4-pro
+          model: xiaomi/mimo-v2.5
           temperature: 0.8
     chat:
       observations:

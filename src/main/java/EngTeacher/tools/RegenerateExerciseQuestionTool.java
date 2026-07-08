@@ -29,8 +29,10 @@ public class RegenerateExerciseQuestionTool implements ToolCallback {
 
                         Call this tool ONLY when:
                             (a) the exercise is already in state FAILED and the user attempts it again, OR
-                            (b) the user EXPLICITLY asks for a different question for the same phrase.
-                        Do NOT regenerate after a first wrong attempt, after a synonym, or just to be helpful.
+                            (b) the user gives up on the current question — asks for the answer or
+                                EXPLICITLY asks for a different question for the same phrase.
+                        Do NOT regenerate after a first wrong attempt (synonym, paraphrase, wrong phrase),
+                        and never just to be helpful.
 
 
                         Important:

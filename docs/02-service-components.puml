@@ -21,7 +21,7 @@ package "EngTeacher Service" {
 }
 
 database  "MongoDB"      as mongo    $db
-rectangle "Groq LLM API" as llm      $llm
+rectangle "OpenRouter LLM API" as llm      $llm
 rectangle "Langfuse"     as langfuse $obs
 
 ctrl --> sec

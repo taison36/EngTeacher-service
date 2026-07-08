@@ -15,7 +15,7 @@ actor "Nutzer" as user
 rectangle "Client\n(Vue.js)"           as client   $app
 rectangle "EngTeacher Service\n(Spring AI)" as service $app
 database  "MongoDB"                    as mongo    $db
-rectangle "Groq LLM API"               as llm      $llm
+rectangle "OpenRouter LLM API"               as llm      $llm
 rectangle "Langfuse"                   as langfuse $obs
 
 user --> client : Request

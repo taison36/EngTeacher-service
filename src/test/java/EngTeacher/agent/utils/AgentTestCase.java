@@ -8,17 +8,14 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Ein Testfall fuer einen kompletten Mehr-Turn-Dialog.
+ * Bausteine fuer die fachliche Definition eines Agenten-Testfalls.
  *
  * Fixture: was in Mongo liegt, bevor der erste Turn losgeht.
- * Turns:   pro Nutzernachricht eine erwartete Tool-Trajektorie.
+ * Turn:    eine Nutzernachricht samt erwarteter Tool-Trajektorie.
  */
-public record AgentTestCase(
-        String name,
-        Fixture fixture,
-        List<Turn> turns
-) {
-    @Override public String toString() { return name; }
+public final class AgentTestCase {
+
+    private AgentTestCase() {}
 
     public record Fixture(
             List<Phrase> phrases,

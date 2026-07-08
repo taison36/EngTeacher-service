@@ -34,7 +34,8 @@ public class IncorrectExerciseTool implements ToolCallback {
                             - the user fills the blank with a DIFFERENT target phrase from the active session,
                             - the answer is grammatically broken English that no longer reflects the target
                               construct,
-                            - the user explicitly asks for the answer or gives up.
+                            - the user gives up: asks for the answer, asks for a different question,
+                              or says they can't do it.
 
                         DO NOT mark incorrect (these are CORRECT — use `markExerciseCorrect`):
                             - different tense, person, or number ("break" → "broke", "I" → "they"),
