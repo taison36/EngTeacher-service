@@ -40,14 +40,3 @@ When running the service outside Docker, additionally set `MONGO_URL=localhost:2
 The LLM model is selected in `src/main/resources/application.yml`
 (`spring.ai.openai.chat.options.model`).
 
-## Run
-
-```bash
-docker compose up --build
-```
-
-| Component     | URL                   |
-|---------------|-----------------------|
-| Client        | http://localhost:5173 |
-| Backend API   | http://localhost:8080 |
-| Mongo Express | http://localhost:8081 |
