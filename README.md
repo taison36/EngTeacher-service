@@ -12,8 +12,6 @@ How it works?
 
 ## Setup
 
-Create a `.env` file in the repository root (next to `docker-compose.yml`) with these keys:
-
 ```env
 # LLM inference via OpenRouter (create a key at https://openrouter.ai/settings/keys)
 OPENROUTER_API_KEY=sk-or-...
