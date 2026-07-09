@@ -32,8 +32,6 @@ LANGFUSE_AUTH_HEADER=...
 ```
 
 All keys are required — the service fails to start if one is missing.
-When running the service outside Docker, additionally set `MONGO_URL=localhost:27017`
-(inside docker-compose it is set automatically).
 
 The LLM model is selected in `src/main/resources/application.yml`
 (`spring.ai.openai.chat.options.model`).
